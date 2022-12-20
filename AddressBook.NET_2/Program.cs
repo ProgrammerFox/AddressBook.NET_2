@@ -1,2 +1,8 @@
-﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
+﻿using AddressBook_dotnet6.Model;
+using AddressBook_Dotnet6.View;
+
+var addressBookCommands = new AddressBookCommands<BasePerson>(new AddressBook<BasePerson>(), new ConsoleCommunicator());
+
+var commander = addressBookCommands.GenerateCommander();
+
+commander.Step();

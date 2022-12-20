@@ -20,22 +20,27 @@ namespace AddressBook_Dotnet6.Controller
 
         public void Step()
         {
-            string command = Communicator.Read();
+            Communicator.Write("AddressBook>", " ");
 
-            if (!Commands.ContainsKey(command))
+            string command = Communicator.Read().ToLower();
+
+
+            if (Commands.ContainsKey(command))
             {
-                Communicator.Write("Error.");
+                State state = Commands[command]();
+
+                switch (state)
+                {
+                    case State.Error:
+                        Communicator.Write("An error occurred while executing the command.");
+                        break;
+                    case State.Stop:
+                        return;
+                }
             }
-
-            State state = Commands[command]();
-
-            switch (state)
+            else if(command != "")
             {
-                case State.Error:
-                    Communicator.Write("An error occurred while executing the command.");
-                    break;
-                case State.Stop:
-                    return;
+                Communicator.Write($"Error. Command \"{command}\" don't found.");
             }
 
             Step();

@@ -1,10 +1,11 @@
-﻿using System;
+﻿using AddressBook_Dotnet6.Controller;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AddressBook_Dotnet6.Controller
+namespace AddressBook_Dotnet6.View
 {
     public class ConsoleCommunicator : ICommunicator
     {
