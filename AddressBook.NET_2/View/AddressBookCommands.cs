@@ -3,6 +3,7 @@ using AddressBook_Dotnet6.Controller;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -25,6 +26,7 @@ namespace AddressBook_Dotnet6.View
         new()
         {
             { "add", Add },
+            { "show", Show },
             { "exit", Exit }
         };
 
@@ -51,6 +53,68 @@ namespace AddressBook_Dotnet6.View
             {
                 return State.Error;
             }
+            
+        }
+
+        public State Show()
+        {
+            try
+            {
+                if (!AddressBook.Any()) return State.Ok;
+
+                string bookAsString = AddressBook[0].ToJson()
+                    .Replace("{", "")
+                    .Replace("}", "")
+                    .Replace("\"", "")
+                    .Replace(" ", "");
+
+                string[] headers = bookAsString.Split(',')
+                    .Select(x => x.Split(':')[0])
+                    .ToArray();
+
+                List<string[]> bookTable = AddressBook.Select(x => x.ToJson()
+                                                .Replace("{", "")
+                                                .Replace("}", "")
+                                                .Replace("\"", "")
+                                                .Split(',')
+                                                .Select(x => x.Split(':')[1])
+                                                        .ToArray())
+                                                .ToList();
+
+                var spaces = headers.Select(x => x.Length).ToArray();
+
+                foreach (var bookRow in bookTable)
+                {
+                    for (int i = 0; i < bookRow.Length; i++)
+                    {
+                        spaces[i] = Math.Max(spaces[i], bookRow[i].Length);
+                    }
+                }
+
+                var headerString = new StringBuilder($"+-{"-".Repeat(spaces.Sum() + (spaces.Length - 1) * 3)}-+\n");
+
+                var newHeaders = headers.Zip(spaces, (r, s) => r + " ".Repeat(s - r.Length)).ToArray();
+                headerString.AppendLine($"| {string.Join(" | ", newHeaders)} |");
+
+                headerString.AppendLine($"|-{"-".Repeat(spaces.Sum() + (spaces.Length - 1) * 3)}-|");
+
+                foreach (var bookRow in bookTable)
+                {
+                    var newBookRow = bookRow.Zip(spaces, (r, s) => r + " ".Repeat(s - r.Length)).ToArray();
+                    headerString.AppendLine($"| {string.Join(" | ", newBookRow)} |");
+                }
+
+                headerString.AppendLine($"+-{"-".Repeat(spaces.Sum() + (spaces.Length - 1) * 3)}-+");
+
+                Communicator.Write(headerString.ToString());
+
+                return State.Ok;
+            }
+            catch
+            {
+                return State.Error;
+            }
+
             
         }
 
