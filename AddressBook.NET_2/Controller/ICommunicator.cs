@@ -10,6 +10,8 @@ namespace AddressBook_Dotnet6.Controller
     {
         string Read();
 
+        string Read(string text);
+
         void Write(string text, string end = "\n");
     }
 }

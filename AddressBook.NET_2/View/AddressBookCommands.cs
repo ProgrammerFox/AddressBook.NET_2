@@ -27,6 +27,7 @@ namespace AddressBook_Dotnet6.View
         {
             { "add", Add },
             { "show", Show },
+            { "delete", Delete },
             { "exit", Exit }
         };
 
@@ -34,18 +35,12 @@ namespace AddressBook_Dotnet6.View
         {
             try
             {
-                var person = new T();
-
-                Communicator.Write("Name: ", "");
-                person.Name = Communicator.Read();
-
-                Communicator.Write("Surname: ", "");
-                person.Surname = Communicator.Read();
-
-                Communicator.Write("Address: ", "");
-                person.Address = Communicator.Read();
-
-                AddressBook.Add(person);
+                AddressBook.Add(new T 
+                {
+                    Name = Communicator.Read("Name: "),
+                    Surname = Communicator.Read("Surname: "),
+                    Address = Communicator.Read("Address: ")
+                });
 
                 return State.Ok;
             }
@@ -60,53 +55,7 @@ namespace AddressBook_Dotnet6.View
         {
             try
             {
-                if (!AddressBook.Any()) return State.Ok;
-
-                string bookAsString = AddressBook[0].ToJson()
-                    .Replace("{", "")
-                    .Replace("}", "")
-                    .Replace("\"", "")
-                    .Replace(" ", "");
-
-                string[] headers = bookAsString.Split(',')
-                    .Select(x => x.Split(':')[0])
-                    .ToArray();
-
-                List<string[]> bookTable = AddressBook.Select(x => x.ToJson()
-                                                .Replace("{", "")
-                                                .Replace("}", "")
-                                                .Replace("\"", "")
-                                                .Split(',')
-                                                .Select(x => x.Split(':')[1])
-                                                        .ToArray())
-                                                .ToList();
-
-                var spaces = headers.Select(x => x.Length).ToArray();
-
-                foreach (var bookRow in bookTable)
-                {
-                    for (int i = 0; i < bookRow.Length; i++)
-                    {
-                        spaces[i] = Math.Max(spaces[i], bookRow[i].Length);
-                    }
-                }
-
-                var headerString = new StringBuilder($"+-{"-".Repeat(spaces.Sum() + (spaces.Length - 1) * 3)}-+\n");
-
-                var newHeaders = headers.Zip(spaces, (r, s) => r + " ".Repeat(s - r.Length)).ToArray();
-                headerString.AppendLine($"| {string.Join(" | ", newHeaders)} |");
-
-                headerString.AppendLine($"|-{"-".Repeat(spaces.Sum() + (spaces.Length - 1) * 3)}-|");
-
-                foreach (var bookRow in bookTable)
-                {
-                    var newBookRow = bookRow.Zip(spaces, (r, s) => r + " ".Repeat(s - r.Length)).ToArray();
-                    headerString.AppendLine($"| {string.Join(" | ", newBookRow)} |");
-                }
-
-                headerString.AppendLine($"+-{"-".Repeat(spaces.Sum() + (spaces.Length - 1) * 3)}-+");
-
-                Communicator.Write(headerString.ToString());
+                Communicator.Write(AddressBook.AsTable());
 
                 return State.Ok;
             }
@@ -114,8 +63,20 @@ namespace AddressBook_Dotnet6.View
             {
                 return State.Error;
             }
+        }
 
-            
+        public State Delete()
+        {
+            try
+            {
+                AddressBook.RemoveAt(int.Parse(Communicator.Read("Id: ")) - 1);
+
+                return State.Ok;
+            }
+            catch
+            {
+                return State.Error;
+            }
         }
 
         public State Exit()

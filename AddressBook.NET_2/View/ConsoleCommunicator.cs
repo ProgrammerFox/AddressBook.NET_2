@@ -14,6 +14,12 @@ namespace AddressBook_Dotnet6.View
             return Console.ReadLine() ?? "";
         }
 
+        public string Read(string text)
+        {
+            Console.Write(text);
+            return Console.ReadLine() ?? "";
+        }
+
         public void Write(string text, string end = "\n")
         {
             Console.Write(text + end);
